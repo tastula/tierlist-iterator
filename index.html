@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tierlist iterator</title>
+    <style>
+      #content {
+        font-family: Arial, sans-serif;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        align-items: center;
+      }
+      button {
+        background-color: olive;
+        color: white;
+        cursor: pointer;
+        border: none;
+        padding: 24px 0;
+        margin: 16px 0;
+        width: 100%;
+        max-width: 400px;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+      }
+      button:disabled {
+        background-color: gray;
+      }
+      p {
+        font-weight: bold;
+      }
+      #value {
+        font-size: 36px;
+        font-weight: bolder;
+      }
+      .tier-f {
+        color: #ff0000;
+      }
+      .tier-d {
+        color: #ff7700;
+      }
+      .tier-c {
+        color: #f5af00;
+      }
+      .tier-b {
+        color: #008000;
+      }
+      .tier-a {
+        color: #0000ff;
+      }
+      .tier-s {
+        color: #800080;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <p id="value-prev2"></p>
+      <p id="value-prev1"></p>
+      <p id="value"></p>
+      <p id="value-next1"></p>
+      <p id="value-next2"></p>
+      <button id="prev">Previous</button>
+      <button id="next">Next</button>
+      <p id="counter"></p>
+    </div>
+
+    <script>
+      const tierClasses = {
+        F: "tier-f",
+        D: "tier-d",
+        C: "tier-c",
+        B: "tier-b",
+        A: "tier-a",
+        S: "tier-s",
+      };
+
+      const updateHistory = (jsonList, elementId, index) => {
+        const outsideRange = index < 0 || index >= jsonList.length;
+        const newValue = outsideRange ? "." : jsonList[index];
+        document.getElementById(elementId).innerText = newValue;
+      };
+
+      const updateButtons = (jsonList, index) => {
+        const disablePrev = index === 0;
+        const disableNext = index === jsonList.length - 1;
+        const counterText = `${index + 1} of ${jsonList.length}`;
+        document.getElementById("prev").disabled = disablePrev;
+        document.getElementById("next").disabled = disableNext;
+        document.getElementById("counter").innerText = counterText;
+      };
+
+      const updateValues = (jsonList, index) => {
+        const tier = jsonList[index];
+        document.getElementById("value").innerText = tier;
+        document.getElementById("value").classList = [tierClasses[tier]];
+        updateHistory(jsonList, "value-prev1", index - 1);
+        updateHistory(jsonList, "value-prev2", index - 2);
+        updateHistory(jsonList, "value-next1", index + 1);
+        updateHistory(jsonList, "value-next2", index + 2);
+        updateButtons(jsonList, index);
+      };
+
+      fetch("data.json")
+        .then((response) => response.json())
+        .then((jsonList) => {
+          let currentIndex = 0;
+          updateValues(jsonList, currentIndex);
+
+          document.getElementById("prev").addEventListener("click", () => {
+            currentIndex--;
+            updateValues(jsonList, currentIndex);
+          });
+
+          document.getElementById("next").addEventListener("click", () => {
+            currentIndex++;
+            updateValues(jsonList, currentIndex);
+          });
+        })
+        .catch((error) => console.error(error));
+    </script>
+  </body>
+</html>
